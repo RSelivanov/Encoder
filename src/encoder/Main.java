@@ -169,7 +169,7 @@ public class Main extends Application {
                 String[] arr = string.split("<::>");
 
                 try {
-                    //закидываем в буфер
+                    //Закидываем в буфер
                     Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
                     StringSelection stringselection = new StringSelection(Encoder.decrypt(arr[2], fildKey.getText()));
                     clipboard.setContents(stringselection, null);
