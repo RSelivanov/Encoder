@@ -35,7 +35,7 @@ public class Main extends Application {
     
     private TextField fildName = new TextField();
     private TextField fildLogin = new TextField();
-    private TextField fildPassword = new TextField();
+    private PasswordField fildPassword = new PasswordField();
     private Button addBtn = new Button("Add");
     
     private Label labelKey = new Label("Key:");
