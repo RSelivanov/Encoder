@@ -2,26 +2,21 @@ package encoder;
 
 import java.security.Key;
 import java.security.MessageDigest;
+import java.util.Base64;
 import java.util.Random;
 import javax.crypto.Cipher;
-import javax.crypto.KeyGenerator;
 import javax.crypto.spec.SecretKeySpec;
-import sun.misc.BASE64Decoder;
-import sun.misc.BASE64Encoder;
+//import sun.misc.BASE64Decoder;
+//import sun.misc.BASE64Encoder;
 
-/**
- * Класс Encoder работает с шифрованием и дешифровкой информации
- */
-public class Encoder {
+
+public class Encoder 
+{
     
     private static final String ALGORITHM = "AES";
     
-    /**
-     * Шифрует строку
-     * @param String lines <p>Строка для шифрования</p>
-     * @return String <p>Зашифрованная строка</p>
-     */
-    public static String encrypt(String value, String sKey) throws Exception
+    /*
+    public static String encryptOld(String value, String sKey) throws Exception
     {
         Key key = generateKey(sKey);
         Cipher cipher = Cipher.getInstance(Encoder.ALGORITHM);
@@ -31,13 +26,18 @@ public class Encoder {
         return encryptedValue64;
                
     }
-    
-    /**
-     * Расшифровывает строку
-     * @param String lines <p>Строка для расшифровки</p>
-     * @return String <p>Расшифрованная строка</p>
-     */
-    public static String decrypt(String value, String sKey) throws Exception
+    */
+    public static String encrypt(String value, String sKey) throws Exception 
+    {
+        Key key = generateKey(sKey);
+        Cipher cipher = Cipher.getInstance(ALGORITHM);
+        cipher.init(Cipher.ENCRYPT_MODE, key);
+        byte[] encryptedByteValue = cipher.doFinal(value.getBytes("utf-8"));
+        return Base64.getEncoder().encodeToString(encryptedByteValue);
+    }
+
+    /*
+    public static String decryptOld(String value, String sKey) throws Exception
     {
         Key key = generateKey(sKey);
         Cipher cipher = Cipher.getInstance(Encoder.ALGORITHM);
@@ -48,12 +48,20 @@ public class Encoder {
         return decryptedValue;
                 
     }
+    */
     
-    /**
-     * Генерирует ключ для шифрования или дешифровки
-     * @return Key <p>ключ</p>
-     */
-    private static Key generateKey(String sKey) throws Exception 
+    public static String decrypt(String value, String sKey) throws Exception 
+    {
+        Key key = generateKey(sKey);
+        Cipher cipher = Cipher.getInstance(ALGORITHM);
+        cipher.init(Cipher.DECRYPT_MODE, key);
+        byte[] decryptedValue64 = Base64.getDecoder().decode(value);
+        byte[] decryptedByteValue = cipher.doFinal(decryptedValue64);
+        return new String(decryptedByteValue, "utf-8");
+    }
+    
+    /*
+    private static Key generateKeyOld(String sKey) throws Exception 
     {
         //Получаем ключь из инферфейсп
         String str = sKey;
@@ -76,11 +84,18 @@ public class Encoder {
         //Key key = new SecretKeySpec(Encoder.KEY.getBytes(),Encoder.ALGORITHM);
         return key;
     }
-    
-     /**
-     * Генерирует пароль
-     * @return Key <p>ключ</p>
-     */
+    */
+    private static Key generateKey(String sKey) throws Exception 
+    {
+        String str = sKey;
+        MessageDigest sha = MessageDigest.getInstance("SHA-256");
+        byte[] keyBytes = sha.digest(str.getBytes("utf-8"));
+        byte[] truncatedKeyBytes = new byte[16];
+        System.arraycopy(keyBytes, 0, truncatedKeyBytes, 0, 16);
+        return new SecretKeySpec(truncatedKeyBytes, ALGORITHM);
+    }
+
+    /*
     public static String generatePassword() 
     {
         String charArr = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_";
@@ -94,5 +109,32 @@ public class Encoder {
         }
         return randomPass;
     }
+    */
     
+    public static String generatePassword(boolean isCheckBoxSimplePassword) 
+    {
+        String charArr;
+        int charCount;
+        
+        if(isCheckBoxSimplePassword)
+        { 
+            charArr = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"; 
+            charCount = 62;
+        }
+        else
+        {
+            charArr = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_!#$%&'()*+,-./:;<=>?@[]^`{|}~"; 
+            charCount = 93;
+        }
+        
+        StringBuilder randomPass = new StringBuilder();
+        int index;
+        Random random = new Random();
+
+        for (int i = 0; i < 20; i++) {
+            index = random.nextInt(charCount);
+            randomPass.append(charArr.charAt(index));
+        }
+        return randomPass.toString();
+    }
 }

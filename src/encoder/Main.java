@@ -4,10 +4,12 @@ import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
 import java.util.ArrayList;
+import java.util.Collections;
 import javafx.application.Application;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.CheckBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.ScrollPane;
@@ -43,6 +45,8 @@ public class Main extends Application {
     private Label labelLogin = new Label("Login");
     private Label labelPassword = new Label("Password");
     
+    private CheckBox checkBoxSimplePassword = new CheckBox("Simple Password");
+    
     public static void main(String[] args) {
         launch(args);
     }
@@ -51,8 +55,11 @@ public class Main extends Application {
     public void start(Stage stage) {
 
         lines = Data.readToFile();
+        
+        Collections.sort(lines, String.CASE_INSENSITIVE_ORDER);
+        
         render(layout);
-
+        
         addBtn.setOnAction(event -> {
             
             if(!fildName.getText().trim().isEmpty() && !fildLogin.getText().trim().isEmpty() && !fildKey.getText().trim().isEmpty()){
@@ -63,7 +70,7 @@ public class Main extends Application {
                 
                 try {
                     if(fildPassword.getText().trim().isEmpty()){
-                        cryptPass = Encoder.encrypt(Encoder.generatePassword(), fildKey.getText());
+                        cryptPass = Encoder.encrypt(Encoder.generatePassword(checkBoxSimplePassword.isSelected()), fildKey.getText());
                     }else{
                         cryptPass = Encoder.encrypt(fildPassword.getText(), fildKey.getText());
                     }
@@ -101,6 +108,10 @@ public class Main extends Application {
         fildKey.setTranslateY(0 + margin);
         layout.getChildren().add(fildKey);
         
+        checkBoxSimplePassword.setTranslateX(190 + margin);
+        checkBoxSimplePassword.setTranslateY(4 + margin);
+        layout.getChildren().add(checkBoxSimplePassword);
+                
         labelName.setTranslateY(25 + margin  + 3);
         labelName.setTranslateX(0 + margin);
         layout.getChildren().add(labelName);
@@ -173,6 +184,30 @@ public class Main extends Application {
                     Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
                     StringSelection stringselection = new StringSelection(Encoder.decrypt(arr[2], fildKey.getText()));
                     clipboard.setContents(stringselection, null);
+                   
+                    /* 
+                    
+                    String cryptPassNew = null; 
+                    try 
+                    {
+                        String decryptedPassword = Encoder.decrypt(arr[2], oldKey);
+                        System.out.println("1");
+                        cryptPassNew = Encoder.encryptNew(decryptedPassword, newKey);
+                        System.out.println("2");
+
+                    } catch(Exception e) { System.out.println("Error: "+e.getMessage()); }
+                    
+                    string = string + "<::>" + cryptPassNew;
+                    
+                    lines = Data.readToFile();
+                    Collections.sort(lines, String.CASE_INSENSITIVE_ORDER);
+                    
+                    lines.set(Integer.valueOf(getBtn.getId()), string);
+                    
+                    Data.clearFile();
+                    Data.writeToFile(lines);   
+                    */
+                    
                } catch(Exception e) { System.out.println("Error: "+e.getMessage()); }
             });
             
