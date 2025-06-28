@@ -1,228 +1,203 @@
 package encoder;
 
-import java.awt.Toolkit;
-import java.awt.datatransfer.Clipboard;
-import java.awt.datatransfer.StringSelection;
+import javax.swing.*;
+import java.awt.*;
+import java.awt.datatransfer.*;
+import java.awt.event.*;
 import java.util.ArrayList;
 import java.util.Collections;
-import javafx.application.Application;
-import javafx.geometry.Rectangle2D;
-import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.control.CheckBox;
-import javafx.scene.control.Label;
-import javafx.scene.control.PasswordField;
-import javafx.scene.control.ScrollPane;
-import javafx.scene.control.TextField;
-import javafx.scene.layout.Pane;
-import javafx.stage.Screen;
-import javafx.stage.Stage;
 
-/**
- * Класс Main главынй класс + графический интерфейс
- */
-public class Main extends Application {
-    
-    private int margin = 5;
-    private int indentY = 75;
-    private int spaseY = 0 + margin + margin;
-    
-    private ArrayList<String> lines = new ArrayList<String>();
-    
-    private Pane layout = new Pane();
-    private ScrollPane scrollpane = new ScrollPane(layout);
-    private Scene scene = new Scene(scrollpane);
-        
-    private PasswordField fildKey = new PasswordField();
-    
-    private TextField fildName = new TextField();
-    private TextField fildLogin = new TextField();
-    private PasswordField fildPassword = new PasswordField();
-    private Button addBtn = new Button("Add");
-    
-    private Label labelKey = new Label("Key:");
-    private Label labelName = new Label("Name");
-    private Label labelLogin = new Label("Login");
-    private Label labelPassword = new Label("Password");
-    
-    private CheckBox checkBoxSimplePassword = new CheckBox("Simple Password");
-    
+public class Main {
+
+    private final int margin = 5;
+    private final int indentY = 90;
+
+    private ArrayList<String> lines = new ArrayList<>();
+    private JPanel layout = new JPanel(null); // абсолютное позиционирование
+    private JScrollPane scrollPane = new JScrollPane(layout);
+
+    private JPasswordField fieldKey = new JPasswordField();
+    private JTextField fieldName = new JTextField();
+    private JTextField fieldLogin = new JTextField();
+    private JPasswordField fieldPassword = new JPasswordField();
+    private JButton addBtn = new JButton("Add");
+    private JCheckBox simplePasswordBox = new JCheckBox("Simple Password");
+
+    private int spaseY = margin * 2;
+
     public static void main(String[] args) {
-        launch(args);
+        SwingUtilities.invokeLater(() -> new Main().createUI());
     }
-    
-    @Override
-    public void start(Stage stage) {
+
+    private void createUI() {
+        JFrame frame = new JFrame("Encoder");
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setSize(555, Toolkit.getDefaultToolkit().getScreenSize().height);
+        frame.setLocation(0, 0);
 
         lines = Data.readToFile();
-        
         Collections.sort(lines, String.CASE_INSENSITIVE_ORDER);
-        
-        render(layout);
-        
-        addBtn.setOnAction(event -> {
-            
-            if(!fildName.getText().trim().isEmpty() && !fildLogin.getText().trim().isEmpty() && !fildKey.getText().trim().isEmpty()){
-                
-                spaseY += 25; 
-                layout.getChildren().clear();
-                String cryptPass = null; 
-                
-                try {
-                    if(fildPassword.getText().trim().isEmpty()){
-                        cryptPass = Encoder.encrypt(Encoder.generatePassword(checkBoxSimplePassword.isSelected()), fildKey.getText());
-                    }else{
-                        cryptPass = Encoder.encrypt(fildPassword.getText(), fildKey.getText());
-                    }
-                } catch(Exception e) { System.out.println("Error: "+e.getMessage()); }
-                
-                lines.add(fildName.getText()+"<::>"+fildLogin.getText()+"<::>"+cryptPass);
-                fildName.setText("");
-                fildLogin.setText("");
-                fildPassword.setText("");
-                Data.clearFile();
-                Data.writeToFile(lines);     
-                render(layout);
-            }
-        });
-        
-        layout.setPrefSize(510, indentY + spaseY);
-        stage.setScene(scene);
-        Rectangle2D primaryScreenBounds = Screen.getPrimary().getVisualBounds();
-        stage.setX(0);
-        stage.setY(0);
-        //stage.setWidth(primaryScreenBounds.getWidth());
-        stage.setHeight(primaryScreenBounds.getHeight());
-        stage.show();
+
+        render();
+
+        scrollPane.getVerticalScrollBar().setUnitIncrement(16);
+        frame.setContentPane(scrollPane);
+        frame.setVisible(true);
     }
 
-    private void render(Pane layout){
-        indentY = 75;
-        spaseY = 0 + margin + margin;
-        
-        labelKey.setTranslateX(0 + margin);
-        labelKey.setTranslateY(0 + margin + 3);
-        layout.getChildren().add(labelKey);
-        
-        fildKey.setTranslateX(25 + margin);
-        fildKey.setTranslateY(0 + margin);
-        layout.getChildren().add(fildKey);
-        
-        checkBoxSimplePassword.setTranslateX(190 + margin);
-        checkBoxSimplePassword.setTranslateY(4 + margin);
-        layout.getChildren().add(checkBoxSimplePassword);
-                
-        labelName.setTranslateY(25 + margin  + 3);
-        labelName.setTranslateX(0 + margin);
-        layout.getChildren().add(labelName);
-            
-        labelLogin.setTranslateY(25 + margin  + 3);
-        labelLogin.setTranslateX(150 + margin);
-        layout.getChildren().add(labelLogin);
-            
-        labelPassword.setTranslateY(25 + margin  + 3);
-        labelPassword.setTranslateX(300 + margin);
-        layout.getChildren().add(labelPassword);
-            
-        fildName.setTranslateX(0 + margin);
-        fildName.setTranslateY(50 + margin);
-        layout.getChildren().add(fildName);
-            
-        fildLogin.setTranslateX(150 + margin);
-        fildLogin.setTranslateY(50 + margin);
-        layout.getChildren().add(fildLogin);
-            
-        fildPassword.setTranslateX(300 + margin);
-        fildPassword.setTranslateY(50 + margin);
-        layout.getChildren().add(fildPassword);
-            
-        addBtn.setTranslateX(450 + margin);
-        addBtn.setTranslateY(50 + margin);
-        addBtn.setId("add");
-        layout.getChildren().add(addBtn);
-        
-        for(int i = 0; i < lines.size(); i++){
-            
-            String line = lines.get(i);
-            String[] collums = line.split("<::>");
-            
-            spaseY += 25;
-            
-            TextField name = new TextField(collums[0]);
-            name.setTranslateX(0 + margin);
-            name.setTranslateY(indentY + i*25 + margin);
-            layout.getChildren().add(name);
+    private void render() {
 
-            
-            TextField login = new TextField(collums[1]);
-            login.setTranslateX(150 + margin);
-            login.setTranslateY(indentY + i*25 + margin);
-            layout.getChildren().add(login);
-
-            
-            Button getBtn = new Button("Get Password");
-            getBtn.setTranslateX(300 + margin);
-            getBtn.setTranslateY(indentY + i*25 + margin);
-            getBtn.setPrefWidth(149);
-            getBtn.setId(String.valueOf(i));
-            layout.getChildren().add(getBtn);
-            
-            Button btnDel = new Button("Del");
-            btnDel.setTranslateX(450 + margin);
-            btnDel.setTranslateY(indentY + i*25 + margin);
-            btnDel.setPrefWidth(38);
-            btnDel.setId(String.valueOf(i));
-            layout.getChildren().add(btnDel);
-            
-            
-            getBtn.setOnAction(event -> {
-                String string = lines.get(Integer.valueOf(getBtn.getId()));
-                String[] arr = string.split("<::>");
-
-                try {
-                    //Закидываем в буфер
-                    Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
-                    StringSelection stringselection = new StringSelection(Encoder.decrypt(arr[2], fildKey.getText()));
-                    clipboard.setContents(stringselection, null);
-                   
-                    /* 
-                    
-                    String cryptPassNew = null; 
-                    try 
-                    {
-                        String decryptedPassword = Encoder.decrypt(arr[2], oldKey);
-                        System.out.println("1");
-                        cryptPassNew = Encoder.encryptNew(decryptedPassword, newKey);
-                        System.out.println("2");
-
-                    } catch(Exception e) { System.out.println("Error: "+e.getMessage()); }
-                    
-                    string = string + "<::>" + cryptPassNew;
-                    
-                    lines = Data.readToFile();
-                    Collections.sort(lines, String.CASE_INSENSITIVE_ORDER);
-                    
-                    lines.set(Integer.valueOf(getBtn.getId()), string);
-                    
-                    Data.clearFile();
-                    Data.writeToFile(lines);   
-                    */
-                    
-               } catch(Exception e) { System.out.println("Error: "+e.getMessage()); }
-            });
-            
-            btnDel.setOnAction(event -> {
-                spaseY -= 25;
-                lines.remove(Integer.parseInt(btnDel.getId()));
-                Data.clearFile();
-                Data.writeToFile(lines);
-                layout.getChildren().clear();
-                render(layout);
-            });
-            
+        for (ActionListener al : addBtn.getActionListeners())
+        {
+            addBtn.removeActionListener(al);
         }
-        layout.setPrefSize(510, indentY + spaseY);
 
+        layout.removeAll();
+        spaseY = margin * 2;
+
+        JLabel labelKey = new JLabel("Key:");
+        labelKey.setBounds(margin, margin + 3, 30, 20);
+        layout.add(labelKey);
+
+        fieldKey.setBounds(25 + margin, margin, 150, 25);
+        layout.add(fieldKey);
+
+        simplePasswordBox.setBounds(190 + margin, margin + 4, 150, 25);
+        layout.add(simplePasswordBox);
+
+        JLabel labelName = new JLabel("Name");
+        labelName.setBounds(margin, 25 + margin + 3, 40, 20);
+        layout.add(labelName);
+
+        JLabel labelLogin = new JLabel("Login");
+        labelLogin.setBounds(150 + margin, 25 + margin + 3, 40, 20);
+        layout.add(labelLogin);
+
+        JLabel labelPassword = new JLabel("Password");
+        labelPassword.setBounds(300 + margin, 25 + margin + 3, 60, 20);
+        layout.add(labelPassword);
+
+        fieldName.setBounds(margin, 50 + margin, 130, 25);
+        //fieldName.setHorizontalAlignment(SwingConstants.LEFT);
+        //fieldName.setCaretPosition(0);
+        layout.add(fieldName);
+
+        fieldLogin.setBounds(150 + margin, 50 + margin, 130, 25);
+        //fieldLogin.setHorizontalAlignment(SwingConstants.LEFT);
+        //fieldLogin.setCaretPosition(0);
+        layout.add(fieldLogin);
+
+        fieldPassword.setBounds(300 + margin, 50 + margin, 130, 25);
+        layout.add(fieldPassword);
+
+        addBtn.setBounds(450 + margin, 50 + margin, 60, 25);
+        layout.add(addBtn);
+
+        addBtn.addActionListener(e -> {
+
+            String key = new String(fieldKey.getPassword()).trim();
+             if (fieldName.getText().trim().isEmpty() || fieldLogin.getText().trim().isEmpty() || key.isEmpty()) 
+             {
+                JOptionPane.showMessageDialog(null, "Key Name or Login is Empty", "Error", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
+                String cryptPass;
+
+                try {
+                    if (new String(fieldPassword.getPassword()).trim().isEmpty()) {
+
+                        String generatedPassword = Encoder.generatePassword(simplePasswordBox.isSelected());
+                        if (generatedPassword == null || generatedPassword.trim().isEmpty()) {
+                            throw new RuntimeException("Password generated empty");
+                        }
+                        cryptPass = Encoder.encryptModern(generatedPassword, key);
+
+                    } else {
+                        cryptPass = Encoder.encryptModern(new String(fieldPassword.getPassword()), key);
+                    }
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                    return;
+                }
+
+                lines.add(fieldName.getText() + "<::>" + fieldLogin.getText() + "<::>" + cryptPass);
+                fieldName.setText("");
+                fieldLogin.setText("");
+                fieldPassword.setText("");
+
+                Data.writeToFile(lines);
+                render();
+            }
+        );
+
+        for (int i = 0; i < lines.size(); i++) {
+            String[] cols = lines.get(i).split("<::>");
+            int y = indentY + i * 25;
+
+            JTextField name = new JTextField(cols[0]);
+            name.setBounds(margin, y, 130, 25);
+            name.setCaretPosition(0);
+            layout.add(name);
+
+            JTextField login = new JTextField(cols[1]);
+            login.setBounds(150 + margin, y, 130, 25);
+            login.setCaretPosition(0);
+            layout.add(login);
+
+            JButton getBtn = new JButton("Get Password");
+            getBtn.setBounds(300 + margin, y, 140, 25);
+            layout.add(getBtn);
+
+            JButton delBtn = new JButton("Del");
+            delBtn.setBounds(450 + margin, y, 60, 25);
+            layout.add(delBtn);
+
+            int index = i;
+
+            getBtn.addActionListener(evt -> {
+                try {
+                    String key = new String(fieldKey.getPassword()).trim();
+                    if (key.isEmpty()) {
+                        JOptionPane.showMessageDialog(null, "Key is Empty", "Error", JOptionPane.ERROR_MESSAGE);
+                        return;
+                    }
+
+                    String[] arr = lines.get(index).split("<::>");
+                    String decryptedPawword = "";
+
+                    try {
+                            String decrypted = Encoder.decryptModern(arr[2], key);
+                            decryptedPawword = decrypted;
+                            // Успех
+                        } catch (javax.crypto.BadPaddingException | javax.crypto.IllegalBlockSizeException e) {
+                            // Неверный ключ или повреждённые данные
+                            JOptionPane.showMessageDialog(null, "Wrong key or corrupted data", "Decrypt Error", JOptionPane.ERROR_MESSAGE);
+                            return; // НЕ ПРОДОЛЖАЕМ
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                            JOptionPane.showMessageDialog(null, "Error: " + e.getMessage(), "Decrypt Error", JOptionPane.ERROR_MESSAGE);
+                            return; // НЕ ПРОДОЛЖАЕМ
+                        }
+
+                    Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+                    clipboard.setContents(new StringSelection(decryptedPawword), null);
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                }
+            });
+
+            delBtn.addActionListener(evt -> {
+                lines.remove(index);
+                Data.writeToFile(lines);
+                render();
+            });
+
+            spaseY += 25;
+        }
+
+        layout.setPreferredSize(new Dimension(570, indentY + spaseY));
+        layout.revalidate();
+        layout.repaint();
     }
-    
 }

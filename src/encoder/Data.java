@@ -3,68 +3,49 @@ package encoder;
 import java.io.*;
 import java.util.ArrayList;
 
-/**
- * Класс Data работает с данными файлов
- */
 public class Data {
-    
+
+    private static final File myFile = new File(System.getProperty("user.home", "") + File.separator + "encoder.txt");
+
     /**
-     * Записывает данные в файл
-     * @param ArrayList lines <p>Массив строк</p>
-     * @return void <p>Ничего не возвращает</p>
+     * Записывает строки в файл, перезаписывая его содержимое.
+     * Если список пустой, файл НЕ трогается.
      */
-    public static void writeToFile(ArrayList lines){
-        
-        File myFile = new File(System.getProperty("user.home", "") + "\\" + "encoder.txt");
-        try{
-            PrintWriter writer = new PrintWriter(new FileWriter(myFile, true));
-            for(int i = 0; i < lines.size(); i++){
-                writer.println(lines.get(i));
-            }
-            writer.close();
-        }catch(IOException e){
-           e.printStackTrace();
+    public static void writeToFile(ArrayList<String> lines) {
+        if (lines == null || lines.isEmpty()) {
+            System.out.println("Error file was not update. List is empty.");
+            return;
         }
-    }
-    
-    /**
-     * Читает данные из файла
-     * @return ArrayList <p>Массив прочетаных строк</p>
-     */
-     public static ArrayList readToFile() {
-         
-        ArrayList<String> lines = new ArrayList<String>();
-        
-        try{
-            FileInputStream fstream = new FileInputStream(System.getProperty("user.home", "") + "\\" + "encoder.txt");
-            BufferedReader br = new BufferedReader(new InputStreamReader(fstream));
-            String strLine;
-            while ((strLine = br.readLine()) != null){
-                lines.add(strLine);
+
+        try (PrintWriter writer = new PrintWriter(new FileWriter(myFile, false))) {
+            for (String line : lines) {
+                if (line != null && !line.trim().isEmpty()) {
+                    writer.println(line);
+                }
             }
-        }catch (IOException e){
+        } catch (IOException e) {
             e.printStackTrace();
         }
-        
-        return lines;    
-    } 
-     
-    /**
-     * Очищает файл
-     * @return void <p>Ничего не возвращает</p>
-     */
-    public static void clearFile() {
-        
-        File myFile = new File(System.getProperty("user.home", "") + "\\" + "encoder.txt");
-         try{
-            FileWriter fwOb = new FileWriter(myFile, false); 
-            PrintWriter pwOb = new PrintWriter(fwOb, false);
-            pwOb.flush();
-            pwOb.close();
-            fwOb.close();
-        }catch(IOException ex){
-            ex.printStackTrace();
-        }
     }
-    
+
+    /**
+     * Читает строки из файла и возвращает их как список.
+     */
+    public static ArrayList<String> readToFile() {
+        ArrayList<String> lines = new ArrayList<>();
+        if (!myFile.exists()) return lines;
+
+        try (BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(myFile)))) {
+            String strLine;
+            while ((strLine = br.readLine()) != null) {
+                if (!strLine.trim().isEmpty()) {
+                    lines.add(strLine);
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return lines;
+    }
 }
