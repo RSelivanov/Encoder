@@ -122,16 +122,16 @@ public class Encoder {
                 newLines.add(name + "<::>" + login + "<::>" + encrypted);
 
             } catch (Exception e) {
-                System.err.println("❌ Ошибка при миграции строки:\n" + line);
+                System.err.println("Error while migrating row:\n" + line);
                 e.printStackTrace();
             }
         }
 
         if (!newLines.isEmpty()) {
             Data.writeToFile(newLines);
-            System.out.println("✅ Миграция завершена. Обновлено строк: " + newLines.size());
+            System.out.println("Migration complete. Updated lines: " + newLines.size());
         } else {
-            System.out.println("⚠️ Файл пуст или миграция не требуется.");
+            System.out.println("The file is empty or migration is not required.");
         }
     }
 

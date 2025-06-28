@@ -78,13 +78,9 @@ public class Main {
         layout.add(labelPassword);
 
         fieldName.setBounds(margin, 50 + margin, 130, 25);
-        //fieldName.setHorizontalAlignment(SwingConstants.LEFT);
-        //fieldName.setCaretPosition(0);
         layout.add(fieldName);
 
         fieldLogin.setBounds(150 + margin, 50 + margin, 130, 25);
-        //fieldLogin.setHorizontalAlignment(SwingConstants.LEFT);
-        //fieldLogin.setCaretPosition(0);
         layout.add(fieldLogin);
 
         fieldPassword.setBounds(300 + margin, 50 + margin, 130, 25);
